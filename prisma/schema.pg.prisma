@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  goals        Goal[]
+  checkIns     DailyCheckIn[]
+  sleepRecords SleepRecord[]
+  streaks      Streak[]
+}
+
+model Goal {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  emoji     String   @default("🎯")
+  color     String   @default("#6366f1")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+  @@index([userId])
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  goalId      String
+  title       String
+  createdAt   DateTime @default(now())
+  goal        Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  completions TaskCompletion[]
+  @@index([goalId])
+}
+
+model TaskCompletion {
+  id          String        @id @default(cuid())
+  taskId      String
+  checkInId   String
+  completedAt DateTime      @default(now())
+  task        Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  checkIn     DailyCheckIn  @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  @@index([taskId])
+  @@index([checkInId])
+}
+
+model DailyCheckIn {
+  id          String           @id @default(cuid())
+  userId      String
+  date        DateTime
+  score       Float            @default(0)
+  note        String           @default("")
+  createdAt   DateTime         @default(now())
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completions TaskCompletion[]
+  @@unique([userId, date])
+  @@index([userId])
+}
+
+model Streak {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  current   Int       @default(0)
+  longest   Int       @default(0)
+  lastDate  DateTime?
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SleepRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime
+  sleepTime String
+  wakeTime  String
+  hours     Float
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, date])
+  @@index([userId])
+}

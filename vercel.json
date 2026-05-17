@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cp prisma/schema.pg.prisma prisma/schema.prisma && npx prisma generate && npx prisma db push && next build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "outputDirectory": ".next"
+}

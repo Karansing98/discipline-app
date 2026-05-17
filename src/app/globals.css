@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0f0f23;
+  --foreground: #e2e8f0;
+  --primary: #6366f1;
+  --primary-hover: #818cf8;
+  --secondary: #10b981;
+  --accent: #f59e0b;
+  --danger: #ef4444;
+  --card: #1e1e3a;
+  --card-hover: #2a2a4a;
+  --border: #2d2d5e;
+  --muted: #94a3b8;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px var(--primary); }
+  50% { box-shadow: 0 0 20px var(--primary); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
