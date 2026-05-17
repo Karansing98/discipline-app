@@ -9,6 +9,7 @@ const links = [
   { href: "/goals", label: "Goals", icon: "🎯" },
   { href: "/focus", label: "Focus", icon: "⏱️" },
   { href: "/sleep", label: "Sleep", icon: "🌙" },
+  { href: "/distractions", label: "Focus", icon: "🚫" },
   { href: "/analytics", label: "Analytics", icon: "📈" },
 ];
 

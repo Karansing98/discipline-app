@@ -18,6 +18,7 @@ model User {
   checkIns     DailyCheckIn[]
   sleepRecords SleepRecord[]
   streaks      Streak[]
+  distractions DistractionLog[]
 }
 
 model Goal {
@@ -75,6 +76,19 @@ model Streak {
   lastDate  DateTime?
   updatedAt DateTime  @updatedAt
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DistractionLog {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime
+  category  String   // social_media, tv, gaming, phone_browsing, other
+  duration  Int      @default(0) // minutes
+  note      String   @default("")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([userId, date])
 }
 
 model SleepRecord {

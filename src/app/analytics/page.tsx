@@ -24,8 +24,17 @@ interface AnalyticsData {
   goalStats: { id: string; title: string; emoji: string; totalCompletions: number }[];
 }
 
+interface DistractionStats {
+  totalTime: number;
+  totalCount: number;
+  byCategory: Record<string, number>;
+  topDistraction: string | null;
+  reCommitMessage: string;
+}
+
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
+  const [distractionStats, setDistractionStats] = useState<DistractionStats | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -38,9 +47,14 @@ export default function AnalyticsPage() {
         return;
       }
 
-      const res = await fetch("/api/analytics");
+      const [res, distRes] = await Promise.all([
+        fetch("/api/analytics"),
+        fetch("/api/distractions/stats"),
+      ]);
       const analyticsData = await res.json();
+      const distData = await distRes.json();
       setData(analyticsData);
+      setDistractionStats(distData);
       setLoading(false);
     }
     load();
@@ -164,6 +178,51 @@ export default function AnalyticsPage() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
+          </div>
+        )}
+
+        {/* Distraction Stats */}
+        {distractionStats && distractionStats.totalCount > 0 && (
+          <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 mt-8">
+            <h2 className="font-semibold mb-4">🚫 Distraction Analysis (This Week)</h2>
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="text-center p-3 rounded-xl bg-[var(--background)]">
+                <div className="text-xl font-bold text-red-400">{distractionStats.totalCount}</div>
+                <div className="text-xs text-[var(--muted)]">Times distracted</div>
+              </div>
+              <div className="text-center p-3 rounded-xl bg-[var(--background)]">
+                <div className="text-xl font-bold text-[var(--accent)]">{distractionStats.totalTime}m</div>
+                <div className="text-xs text-[var(--muted)]">Time lost</div>
+              </div>
+              <div className="text-center p-3 rounded-xl bg-[var(--background)]">
+                <div className="text-xl font-bold text-[var(--primary)]">
+                  {Object.keys(distractionStats.byCategory).length}
+                </div>
+                <div className="text-xs text-[var(--muted)]">Distraction types</div>
+              </div>
+            </div>
+            {Object.entries(distractionStats.byCategory).map(([cat, mins]) => (
+              <div key={cat} className="flex items-center gap-3 mb-2">
+                <span className="text-sm w-28 capitalize">{cat.replace(/_/g, " ")}</span>
+                <div className="flex-1 h-4 bg-[var(--background)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-red-500/70 rounded-full"
+                    style={{
+                      width: `${Math.min(
+                        (mins / Math.max(...Object.values(distractionStats.byCategory))) * 100,
+                        100
+                      )}%`,
+                    }}
+                  />
+                </div>
+                <span className="text-sm text-[var(--muted)] w-12 text-right">{mins}m</span>
+              </div>
+            ))}
+            {distractionStats.reCommitMessage && (
+              <div className="mt-4 p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
+                <p className="text-sm italic text-[var(--muted)]">{distractionStats.reCommitMessage}</p>
+              </div>
+            )}
           </div>
         )}
       </main>

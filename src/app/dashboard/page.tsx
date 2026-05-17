@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import ReminderBanner from "@/components/ReminderBanner";
 import type { GoalWithTasks, StreakData } from "@/types";
 
 interface User {
@@ -18,6 +19,7 @@ export default function DashboardPage() {
   const [score, setScore] = useState(0);
   const [motivation, setMotivation] = useState("");
   const [loading, setLoading] = useState(true);
+  const [lastCheckInTime, setLastCheckInTime] = useState<Date | null>(null);
   const router = useRouter();
 
   const fetchData = useCallback(async () => {
@@ -39,6 +41,7 @@ export default function DashboardPage() {
       const todayData = await todayRes.json();
       setGoals(todayData.goals || []);
       setScore(todayData.score || 0);
+      setLastCheckInTime(new Date());
       const allCompleted =
         todayData.goals?.every(
           (g: GoalWithTasks) =>
@@ -63,6 +66,29 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData();
+
+    // Periodic reminder: check tasks and notify if incomplete
+    const checkTasksAndRemind = async () => {
+      try {
+        const res = await fetch("/api/checkin/today");
+        const data = await res.json();
+        const goalsData = data.goals || [];
+        const incomplete = goalsData.reduce(
+          (sum: number, g: any) =>
+            sum + g.tasks.filter((t: any) => !t.completed).length,
+          0
+        );
+        if (incomplete > 0 && "Notification" in window && Notification.permission === "granted") {
+          new Notification("⏰ Tasks Still Waiting!", {
+            body: `${incomplete} task${incomplete > 1 ? "s" : ""} still incomplete. Your goals are worth finishing!`,
+          });
+        }
+      } catch {}
+    };
+
+    const reminderInterval = setInterval(checkTasksAndRemind, 20 * 60 * 1000);
+
+    return () => clearInterval(reminderInterval);
   }, [fetchData]);
 
   async function toggleTask(taskId: string, completed: boolean) {
@@ -142,6 +168,13 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        <ReminderBanner
+          incompleteCount={totalTasks - completedTasks}
+          totalCount={totalTasks}
+          lastCheckInTime={lastCheckInTime}
+          onRefresh={fetchData}
+        />
 
         <div className="mb-8">
           <div className="flex justify-between text-sm mb-2">
