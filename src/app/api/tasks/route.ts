@@ -5,7 +5,7 @@ import { requireAuth } from "@/lib/auth";
 export async function POST(req: Request) {
   try {
     const userId = await requireAuth();
-    const { goalId, title } = await req.json();
+    const { goalId, title, scheduledTime } = await req.json();
 
     if (!goalId || !title) {
       return NextResponse.json(
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     }
 
     const task = await prisma.task.create({
-      data: { goalId, title },
+      data: { goalId, title, scheduledTime: scheduledTime || "" },
     });
 
     return NextResponse.json({ task }, { status: 201 });

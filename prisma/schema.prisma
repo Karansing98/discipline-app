@@ -35,12 +35,14 @@ model Goal {
 }
 
 model Task {
-  id          String   @id @default(cuid())
-  goalId      String
-  title       String
-  createdAt   DateTime @default(now())
-  goal        Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
-  completions TaskCompletion[]
+  id            String    @id @default(cuid())
+  goalId        String
+  title         String
+  scheduledTime String    @default("") // "09:00" format - empty means no time
+  snoozedUntil  DateTime?             // if set, don't notify until this time
+  createdAt     DateTime  @default(now())
+  goal          Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  completions   TaskCompletion[]
   @@index([goalId])
 }
 

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import ReminderBanner from "@/components/ReminderBanner";
+import TimeReminder from "@/components/TimeReminder";
 import type { GoalWithTasks, StreakData } from "@/types";
 
 interface User {
@@ -144,6 +145,7 @@ export default function DashboardPage() {
     <div className="min-h-screen">
       <Navbar />
       <main className="max-w-4xl mx-auto px-4 py-8">
+        <TimeReminder />
         <div className="flex items-start justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold">
